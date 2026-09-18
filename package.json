@@ -1,0 +1,19 @@
+{
+  "name": "agent-financial",
+  "version": "1.0.0",
+  "description": "Shared read-only financial layer for the agent platform. One interface agents call; QuickBooks is an adapter behind it. No write methods exist.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
