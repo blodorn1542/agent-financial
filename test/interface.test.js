@@ -97,10 +97,15 @@ test('the interface is exactly the read surface, and it is frozen shut', () => {
     assert.equal(money[forbidden], undefined, forbidden + ' must not exist');
   }
 
-  // And none can be bolted on afterwards.
+  // And none can be bolted on afterwards - on the interface itself, and on
+  // the object createFinancial hands back, which is the one agents hold.
+  // Spreading a frozen object produces an extensible one, so both need saying.
   const frozen = createInterface({ adapters: { quickbooks: { name: 'q', provider: 'q', reads: {} } } });
   assert.equal(Object.isFrozen(frozen), true);
   assert.throws(() => { 'use strict'; frozen.createInvoice = () => {}; }, TypeError);
+
+  assert.equal(Object.isFrozen(money), true);
+  assert.throws(() => { 'use strict'; money.createInvoice = () => {}; }, TypeError);
 });
 
 test('an adapter that offers writes is refused at construction', () => {

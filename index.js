@@ -65,14 +65,17 @@ function createFinancial(options = {}) {
 
   const api = createInterface({ adapters, defaultProvider: provider });
 
-  return {
+  // Frozen, like the interface it spreads. Without this the freeze in
+  // lib/interface.js would be undone right here: spreading a frozen object
+  // produces an extensible one, and what an agent actually holds is this.
+  return Object.freeze({
     ...api,
     adapters,
     credentials: creds,
     /** A host doing the OAuth dance needs the provider's own auth methods. */
     auth: (name) => api.adapterFor(name).auth,
     adapter: (name) => api.adapterFor(name),
-  };
+  });
 }
 
 module.exports = {
