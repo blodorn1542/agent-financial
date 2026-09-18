@@ -44,7 +44,7 @@ const aging = await money.getArAging({ tenant: 'acme', basis: 'Accrual' });
 
 | Method | Returns |
 |---|---|
-| `getArAging({ tenant, asOf, basis, agingMethod })` | Per customer, per bucket, **reconciled** — see below |
+| `getArAging({ tenant, asOf, basis, agingMethod, payments, paymentsSince })` | Per customer, per bucket, **reconciled and netted** — see below |
 | `getOpenInvoices({ tenant })` | Every invoice with a balance |
 | `getPaymentsSince({ tenant, date })` | Payments on or after `date` |
 | `getCustomers({ tenant })` | Active customers |
@@ -75,20 +75,50 @@ reading it as the grand total silently throws the rest of the company away.
   customers: [ { customerId, customerName, buckets, bucketsByTitle, total } ],
   reconciled: true,        // false the day they stop agreeing
   reconciliation: {
-    invoiceTotal, reportTotal, diff, matched, mismatched,
+    invoiceTotal,          // gross: what the invoices say
+    creditTotal,           // unapplied credit memos
+    unappliedPaymentTotal, // money on account, not yet applied
+    netTotal,              // invoiceTotal - credits - unapplied payments
+    reportTotal, diff, matched, mismatched,
+    paymentsWindow,        // what the payment side actually covered
     rows,                  // per customer, biggest gap first
   },
 }
 ```
+
+### Open invoices are not the whole of A/R
+
+A customer holding an unapplied credit memo, or money paid on account that has
+not been applied to an invoice, owes less than their invoices say — and the
+aging report already knows it, because it reports the **A/R balance**, not a sum
+of invoices. Comparing a gross invoice sum against a netted report asks a
+different question on each side, and on real books it produces a diff that never
+closes however correct both sides are.
+
+So the invoice side is netted before the comparison: minus open credit memos,
+minus unapplied payments. Applied payments are **not** netted — they already
+reduced the live invoice balances, and subtracting them again would count them
+twice. `invoiceTotal` is still reported beside `netTotal`, because whoever is
+chasing the money still needs to know what the invoices say.
+
+Credit memos are fetched automatically: `Balance > 0` returns every unapplied
+credit there is, so netting them is complete. **Payments are not**, because
+there is no "all unapplied payments" query — only a date window, and a partial
+set is worse than none, since it looks handled while quietly missing older money
+on account. Pass `payments` yourself, or a `paymentsSince` window, and
+`paymentsWindow` in the result says what was covered either way.
 
 Every agent inherits that check instead of each one rediscovering it. Buckets
 come back on stable keys — `current`, `d1_30`, `d31_60`, `d61_90`, `d91_plus` —
 with Intuit's original titles kept alongside in `bucketsByTitle`, because the
 titles drift between report versions and the keys should not.
 
-`lib/aging.js` carries the fix verbatim from where it was originally solved.
-Its header says so, and `test/aging.test.js` replays the real report that
-produced the $562.50. **Do not re-investigate it** — read the tests first.
+`lib/aging.js` carries the **report-parsing** fix from where it was originally
+solved, untouched: the Section walk that distinguishes a parent's subtotal from
+the grand total is the same code, and `test/aging.test.js` replays the real
+report that produced the $562.50. **Do not re-investigate that** — read the
+tests first. The netting above was added around it afterwards and is a separate
+concern; it changes what is compared, never how the report is read.
 
 ## Adapters
 
@@ -154,6 +184,6 @@ migrate the agents in the same change.
 npm test
 ```
 
-34 tests, one per guardrail. They are the specification — each fails loudly if
+44 tests, one per guardrail. They are the specification — each fails loudly if
 someone loosens the thing it guards. The aging tests run against a real
 captured report, not only a hand-built one.

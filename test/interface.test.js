@@ -201,6 +201,8 @@ test('a disagreement is reported as a disagreement, not smoothed over', async ()
   const fetchImpl = async (url) => {
     const u = String(url);
     if (u.includes('/reports/AgedReceivables')) return jsonResponse(sandbox.report);
+    // Credit memos are fetched too now, and must not be answered with invoices.
+    if (/FROM CreditMemo/.test(decodeURIComponent(u))) return jsonResponse({ QueryResponse: { CreditMemo: [] } });
     return jsonResponse({ QueryResponse: { Invoice: bent } });
   };
   const money = createFinancial({
