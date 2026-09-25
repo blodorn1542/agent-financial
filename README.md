@@ -151,6 +151,13 @@ unchanged; the adapter reads either.
 this package existed keeps that authorization: the adapter reads the row that
 is already there. Moving code into a package must not cost anyone a re-auth.
 
+**A leased row** carries `leased: true`, an `access_token`, its
+`access_expires_at` and the `realm_id`, and no refresh token. It is what a
+host gets from the platform gateway's credential vault, which keeps the
+refresh token to itself. The adapter uses the access token as given and never
+refreshes it: once it is within 30 seconds of expiry, every read refuses with
+"start a new run". Nothing is ever saved for a leased row.
+
 Omit the port and the package keeps its own `financial_connections` table,
 which is namespaced so it can share a database file with a host without either
 side knowing the other's schema. A test asserts that.
