@@ -182,6 +182,49 @@ test('an expired refresh token says so instead of failing at Intuit', async () =
   await assert.rejects(() => money.getCustomers({ tenant: 'sandbox' }), /refresh token has expired/);
 });
 
+/** What a host holds after redeeming a vault lease: an access token, no refresh token. */
+function leased(msLeft, realmId = 'REALM-LEASED') {
+  return { leased: true, realm_id: realmId, access_token: 'access-leased', access_expires_at: Date.now() + msLeft };
+}
+
+test('a leased token is used as given, with no refresh token anywhere', async () => {
+  // Five minutes left would be "stale" for an owned row (REFRESH_SKEW_MS) and
+  // trigger a refresh. A leased row cannot be refreshed, so it is simply used.
+  const creds = memoryCredentials({ 'elite-pools/quickbooks': leased(5 * 60 * 1000) });
+  const fetchImpl = recorder(replaySandbox);
+  const money = createFinancial({ credentials: creds, fetchImpl, quickbooks: SETTINGS });
+
+  await money.getOpenInvoices({ tenant: 'elite-pools' });
+
+  const call = fetchImpl.calls.at(-1);
+  assert.match(call.url, /\/v3\/company\/REALM-LEASED\//);
+  assert.equal(call.init.headers.Authorization, 'Bearer access-leased');
+  assert.equal(fetchImpl.calls.some((c) => c.url.includes('oauth')), false, 'no token endpoint is touched');
+  assert.equal(money.auth('quickbooks').isConnected('elite-pools'), true);
+});
+
+test('an expired lease refuses without calling Intuit or saving anything', async () => {
+  const creds = memoryCredentials({ 'elite-pools/quickbooks': leased(10 * 1000) }); // inside the margin
+  const saved = [];
+  const port = { ...creds, save: (...a) => saved.push(a) };
+  const fetchImpl = recorder(replaySandbox);
+  const money = createFinancial({ credentials: port, fetchImpl, quickbooks: SETTINGS });
+
+  await assert.rejects(() => money.getCustomers({ tenant: 'elite-pools' }), /leased QuickBooks token has expired/);
+  assert.equal(fetchImpl.calls.length, 0);
+  assert.equal(saved.length, 0);
+});
+
+test('a leased row carrying a stray refresh token still never refreshes', async () => {
+  const creds = memoryCredentials({
+    'elite-pools/quickbooks': { ...leased(-1000), refresh_token: 'should-not-be-used' },
+  });
+  const fetchImpl = recorder(replaySandbox);
+  const money = createFinancial({ credentials: creds, fetchImpl, quickbooks: SETTINGS });
+  await assert.rejects(() => money.getCustomers({ tenant: 'elite-pools' }), /start a new run/);
+  assert.equal(fetchImpl.calls.length, 0);
+});
+
 test('a credentials port missing a method is refused at construction', () => {
   assert.throws(
     () => createFinancial({ credentials: { get() {}, save() {} }, quickbooks: SETTINGS }),
