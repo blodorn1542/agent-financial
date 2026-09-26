@@ -19,6 +19,7 @@ const quickbooks = require('../lib/adapters/quickbooks');
 const { createCredentials } = require('../lib/credentials');
 
 const sandbox = require('./fixtures/sandbox-aging.json');
+const detail = require('./fixtures/aged-receivable-detail.json');
 
 const SETTINGS = { clientId: 'client-id', clientSecret: 'client-secret', redirectUri: 'https://example.com/cb' };
 
@@ -68,6 +69,7 @@ function recorder(handler) {
 
 function replaySandbox(url) {
   if (url.includes('/reports/AgedReceivables')) return jsonResponse(sandbox.report);
+  if (url.includes('/reports/AgedReceivableDetail')) return jsonResponse(detail.report);
   if (url.includes('/companyinfo/')) return jsonResponse({ CompanyInfo: { CompanyName: 'Sandbox Company_US_1' } });
   if (url.includes('/query')) {
     const q = decodeURIComponent(url.split('query=')[1] || '');
@@ -96,9 +98,11 @@ test('a full sweep of every read issues nothing but GETs at the company file', a
   await money.getInvoicesSince({ tenant: 'sandbox', date: '2026-01-01' });
   await money.getCustomers({ tenant: 'sandbox' });
   await money.getCompanyInfo({ tenant: 'sandbox' });
+  await money.getOpenCredits({ tenant: 'sandbox' });
 
   const books = fetchImpl.calls.filter((c) => c.url.includes('/v3/company/'));
-  assert.ok(books.length >= 8, 'expected the sweep to actually hit the company file');
+  assert.ok(books.some((c) => c.url.includes('/reports/AgedReceivableDetail')), 'the detail report was not read');
+  assert.ok(books.length >= 9, 'expected the sweep to actually hit the company file');
   for (const c of books) {
     assert.equal(c.method, 'GET', 'non-GET at the company file: ' + c.method + ' ' + c.url);
     assert.equal(c.init.body, undefined, 'a request carried a body: ' + c.url);

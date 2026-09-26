@@ -15,6 +15,7 @@ const {
 const { createInterface } = require('../lib/interface');
 
 const sandbox = require('./fixtures/sandbox-aging.json');
+const detail = require('./fixtures/aged-receivable-detail.json');
 
 /** A credentials port backed by a plain object, so no database is needed. */
 function memoryCredentials(seed = {}) {
@@ -60,6 +61,7 @@ function recordingFetch() {
     calls.push({ url: String(url), method: init.method || 'GET' });
     const u = String(url);
     if (u.includes('/reports/AgedReceivables')) return jsonResponse(sandbox.report);
+    if (u.includes('/reports/AgedReceivableDetail')) return jsonResponse(detail.report);
     if (u.includes('/query')) {
       const q = decodeURIComponent(u.split('query=')[1] || '');
       if (/FROM Invoice WHERE Balance/.test(q)) return jsonResponse({ QueryResponse: { Invoice: sandbox.invoices } });
@@ -89,6 +91,11 @@ function financial(credentials = memoryCredentials({ 'sandbox/quickbooks': conne
 
 test('the interface is exactly the read surface, and it is frozen shut', () => {
   const { money } = financial();
+  // Pinned by name: growing the surface is a decision, made here, in review.
+  assert.deepEqual(METHODS, [
+    'getArAging', 'getOpenInvoices', 'getPaymentsSince', 'getCustomers',
+    'getOpenCreditMemos', 'getInvoicesSince', 'getCompanyInfo', 'getOpenCredits',
+  ]);
   for (const m of METHODS) assert.equal(typeof money[m], 'function', m + ' is missing');
 
   // Nothing that writes, under any of the usual names.
@@ -247,4 +254,15 @@ test('the basis and as-of date reach the report call', async () => {
   assert.match(call.url, /accounting_method=Cash/);
   assert.match(call.url, /report_date=2026-08-31/);
   assert.match(call.url, /aging_method=Report_Date/);
+});
+
+test('the basis and as-of date reach the detail report too', async () => {
+  const { money, fetchImpl } = financial();
+  const out = await money.getOpenCredits({ tenant: 'sandbox', basis: 'Cash', asOf: new Date('2026-08-31T12:00:00Z') });
+  const call = fetchImpl.calls.find((c) => c.url.includes('AgedReceivableDetail'));
+  assert.match(call.url, /accounting_method=Cash/);
+  assert.match(call.url, /report_date=2026-08-31/);
+  assert.equal(out.asOf, '2026-08-31');
+  assert.equal(out.tenant, 'sandbox');
+  assert.equal(out.provider, 'quickbooks');
 });
