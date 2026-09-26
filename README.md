@@ -51,8 +51,9 @@ const aging = await money.getArAging({ tenant: 'acme', basis: 'Accrual' });
 | `getOpenCreditMemos({ tenant })` | Unapplied credit memos |
 | `getInvoicesSince({ tenant, date })` | Invoices raised on or after `date` |
 | `getCompanyInfo({ tenant })` | The connected company |
+| `getOpenCredits({ tenant, asOf, basis })` | Every open credit, of any type and age, from the A/R Aging Detail report — see below |
 
-The last three go beyond the four the spec named. They are here because real
+`getOpenCreditMemos`, `getInvoicesSince` and `getCompanyInfo` go beyond the four the spec named. They are here because real
 receivables logic needs them, and the alternative — an agent reaching around
 the interface to the adapter — would defeat the layer on day one.
 
@@ -107,6 +108,32 @@ there is no "all unapplied payments" query — only a date window, and a partial
 set is worse than none, since it looks handled while quietly missing older money
 on account. Pass `payments` yourself, or a `paymentsSince` window, and
 `paymentsWindow` in the result says what was covered either way.
+
+**`getOpenCredits` closes that gap.** It reads the A/R Aging Detail report, which
+lists every open transaction whatever its type, and returns:
+
+```js
+{
+  asOf, basis,
+  credits,  // every NEGATIVE open balance - unapplied payments of any age, credit
+            // memos, journal-entry credits, refunds - with openBalance as a
+            // positive amount held, and each one's date
+  charges,  // positive rows that are not invoices (a journal-entry charge)
+  totals: { credits, creditCount, charges, chargeCount, invoices, invoiceCount, report },
+}
+```
+
+On the live books on 2026-09-26 the invoices-vs-report gap was $29,694.02, and it
+was exactly this: 57 unapplied payments dated 2011–2026 that no payments window
+reached, and six journal entries nothing read at all. Which credits a collector
+should *net* — a week-old payment, yes; a 2011 one, probably not — is the
+collector's policy, so the method returns them all with their dates and judges
+none. `lib/aging-detail.js` finds columns by key or title, never by position,
+reads only leaf rows (bucket headers and Summary subtotals are never
+transactions), and rejects a report with no Customer or Open Balance column
+with `AgingDetailColumnError` rather than answering "no credits". Its header
+comment records which parts of Intuit's JSON shape are documented and which
+are assumed.
 
 Every agent inherits that check instead of each one rediscovering it. Buckets
 come back on stable keys — `current`, `d1_30`, `d31_60`, `d61_90`, `d91_plus` —
@@ -191,6 +218,6 @@ migrate the agents in the same change.
 npm test
 ```
 
-44 tests, one per guardrail. They are the specification — each fails loudly if
+60 tests, one per guardrail. They are the specification — each fails loudly if
 someone loosens the thing it guards. The aging tests run against a real
 captured report, not only a hand-built one.

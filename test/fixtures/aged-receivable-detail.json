@@ -1,0 +1,647 @@
+{
+ "note": "Hand-built, not captured. The row/section/column STRUCTURE follows Intuit's documented ARAgingDetail sample (Sections per aging bucket, Data leaves, customer id on the customer cell). Assumed, not documented: the default column set and titles (taken from the live A/R Aging Detail seen 2026-09-26), ColType \"Date\"/\"String\"/\"Money\" with MetaData ColKey, the Open Balance/Amount keys (subt_open_bal/subt_amount), the transaction id on the type cell, and a Summary per bucket plus a GrandTotal row. Amounts echo the real case (a 2022 $6,100 unapplied payment, a -$660.11 journal-entry credit, a +$496.59 journal-entry charge); names and ids are invented.",
+ "expected": {
+  "rows": 10,
+  "total": -3699.02,
+  "credits": 7225.61,
+  "creditCount": 5,
+  "charges": 496.59,
+  "chargeCount": 1,
+  "invoices": 3030,
+  "invoiceCount": 4
+ },
+ "report": {
+  "Header": {
+   "Time": "2026-09-26T07:00:12-07:00",
+   "ReportName": "AgedReceivableDetail",
+   "DateMacro": "today",
+   "StartPeriod": "2026-09-26",
+   "EndPeriod": "2026-09-26",
+   "Currency": "USD",
+   "Option": [
+    {
+     "Name": "report_date",
+     "Value": "2026-09-26"
+    },
+    {
+     "Name": "NoReportData",
+     "Value": "false"
+    }
+   ]
+  },
+  "Columns": {
+   "Column": [
+    {
+     "ColTitle": "Date",
+     "ColType": "Date",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "tx_date"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Transaction Type",
+     "ColType": "String",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "txn_type"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Num",
+     "ColType": "String",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "doc_num"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Customer",
+     "ColType": "String",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "cust_name"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Due Date",
+     "ColType": "Date",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "due_date"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Amount",
+     "ColType": "Money",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "subt_amount"
+      }
+     ]
+    },
+    {
+     "ColTitle": "Open Balance",
+     "ColType": "Money",
+     "MetaData": [
+      {
+       "Name": "ColKey",
+       "Value": "subt_open_bal"
+      }
+     ]
+    }
+   ]
+  },
+  "Rows": {
+   "Row": [
+    {
+     "Header": {
+      "ColData": [
+       {
+        "value": "Current"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       }
+      ]
+     },
+     "Rows": {
+      "Row": [
+       {
+        "ColData": [
+         {
+          "value": "2026-09-20"
+         },
+         {
+          "value": "Invoice",
+          "id": "9101"
+         },
+         {
+          "value": "5120"
+         },
+         {
+          "value": "Harbor Lane 12",
+          "id": "58"
+         },
+         {
+          "value": "2026-10-20"
+         },
+         {
+          "value": "480.00"
+         },
+         {
+          "value": "480.00"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2026-04-04"
+         },
+         {
+          "value": "Journal Entry",
+          "id": "8801"
+         },
+         {
+          "value": "JE-44"
+         },
+         {
+          "value": "77 Example Drive",
+          "id": "77"
+         },
+         {
+          "value": "2026-04-04"
+         },
+         {
+          "value": "-660.11"
+         },
+         {
+          "value": "-660.11"
+         }
+        ],
+        "type": "Data"
+       }
+      ]
+     },
+     "Summary": {
+      "ColData": [
+       {
+        "value": "Total for Current"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": "-180.11"
+       },
+       {
+        "value": "-180.11"
+       }
+      ]
+     },
+     "type": "Section"
+    },
+    {
+     "Header": {
+      "ColData": [
+       {
+        "value": "1 - 30 days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       }
+      ]
+     },
+     "Rows": {
+      "Row": [
+       {
+        "ColData": [
+         {
+          "value": "2026-08-10"
+         },
+         {
+          "value": "Invoice",
+          "id": "9002"
+         },
+         {
+          "value": "5071"
+         },
+         {
+          "value": "Plains Family:344 Example Plains",
+          "id": "344"
+         },
+         {
+          "value": "2026-09-09"
+         },
+         {
+          "value": "1250.00"
+         },
+         {
+          "value": "1250.00"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2026-09-18"
+         },
+         {
+          "value": "Payment",
+          "id": "7701"
+         },
+         {
+          "value": ""
+         },
+         {
+          "value": "Harbor Lane 12",
+          "id": "58"
+         },
+         {
+          "value": "2026-09-18"
+         },
+         {
+          "value": "-300.00"
+         },
+         {
+          "value": "-300.00"
+         }
+        ],
+        "type": "Data"
+       }
+      ]
+     },
+     "Summary": {
+      "ColData": [
+       {
+        "value": "Total for 1 - 30 days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": "950.00"
+       },
+       {
+        "value": "950.00"
+       }
+      ]
+     },
+     "type": "Section"
+    },
+    {
+     "Header": {
+      "ColData": [
+       {
+        "value": "61 - 90 days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       }
+      ]
+     },
+     "Rows": {
+      "Row": [
+       {
+        "ColData": [
+         {
+          "value": "2026-06-15"
+         },
+         {
+          "value": "Invoice",
+          "id": "8890"
+         },
+         {
+          "value": "4988"
+         },
+         {
+          "value": "Plains Family:344 Example Plains",
+          "id": "344"
+         },
+         {
+          "value": "2026-07-15"
+         },
+         {
+          "value": "900.00"
+         },
+         {
+          "value": "900.00"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2026-06-20"
+         },
+         {
+          "value": "Credit Memo",
+          "id": "8891"
+         },
+         {
+          "value": "CM-12"
+         },
+         {
+          "value": "Harbor Lane 12",
+          "id": "58"
+         },
+         {
+          "value": "2026-06-20"
+         },
+         {
+          "value": "-120.00"
+         },
+         {
+          "value": "-120.00"
+         }
+        ],
+        "type": "Data"
+       }
+      ]
+     },
+     "Summary": {
+      "ColData": [
+       {
+        "value": "Total for 61 - 90 days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": "780.00"
+       },
+       {
+        "value": "780.00"
+       }
+      ]
+     },
+     "type": "Section"
+    },
+    {
+     "Header": {
+      "ColData": [
+       {
+        "value": "91 or more days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       }
+      ]
+     },
+     "Rows": {
+      "Row": [
+       {
+        "ColData": [
+         {
+          "value": "2022-06-01"
+         },
+         {
+          "value": "Payment",
+          "id": "3101"
+         },
+         {
+          "value": ""
+         },
+         {
+          "value": "Plains Family:344 Example Plains",
+          "id": "344"
+         },
+         {
+          "value": "2022-06-01"
+         },
+         {
+          "value": "-6100.00"
+         },
+         {
+          "value": "-6100.00"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2011-03-14"
+         },
+         {
+          "value": "Payment",
+          "id": "1201"
+         },
+         {
+          "value": ""
+         },
+         {
+          "value": "Old Insurer Co",
+          "id": "12"
+         },
+         {
+          "value": "2011-03-14"
+         },
+         {
+          "value": "-45.50"
+         },
+         {
+          "value": "-45.50"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2025-09-11"
+         },
+         {
+          "value": "Journal Entry",
+          "id": "6601"
+         },
+         {
+          "value": "JE-9"
+         },
+         {
+          "value": "Ross Family:3 Example Drive",
+          "id": "41"
+         },
+         {
+          "value": "2025-09-11"
+         },
+         {
+          "value": "496.59"
+         },
+         {
+          "value": "496.59"
+         }
+        ],
+        "type": "Data"
+       },
+       {
+        "ColData": [
+         {
+          "value": "2025-01-02"
+         },
+         {
+          "value": "Invoice",
+          "id": "6001"
+         },
+         {
+          "value": "3310"
+         },
+         {
+          "value": "Name Only Customer"
+         },
+         {
+          "value": "2025-02-01"
+         },
+         {
+          "value": "1000.00"
+         },
+         {
+          "value": "400.00"
+         }
+        ],
+        "type": "Data"
+       }
+      ]
+     },
+     "Summary": {
+      "ColData": [
+       {
+        "value": "Total for 91 or more days past due"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": "-4648.91"
+       },
+       {
+        "value": "-5248.91"
+       }
+      ]
+     },
+     "type": "Section"
+    },
+    {
+     "Summary": {
+      "ColData": [
+       {
+        "value": "TOTAL"
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": ""
+       },
+       {
+        "value": "-3099.02"
+       },
+       {
+        "value": "-3699.02"
+       }
+      ]
+     },
+     "type": "Section",
+     "group": "GrandTotal"
+    }
+   ]
+  }
+ }
+}
