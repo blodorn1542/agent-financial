@@ -70,6 +70,12 @@ function recorder(handler) {
 function replaySandbox(url) {
   if (url.includes('/reports/AgedReceivables')) return jsonResponse(sandbox.report);
   if (url.includes('/reports/AgedReceivableDetail')) return jsonResponse(detail.report);
+  if (url.includes('/reports/ProfitAndLoss')) {
+    return jsonResponse({
+      Header: { ReportName: 'ProfitAndLoss', StartPeriod: '2026-09-01', EndPeriod: '2026-09-27', ReportBasis: 'Accrual' },
+      Rows: { Row: [{ type: 'Section', group: 'Income', Summary: { ColData: [{ value: 'Total Income' }, { value: '1234.50' }] } }] },
+    });
+  }
   if (url.includes('/companyinfo/')) return jsonResponse({ CompanyInfo: { CompanyName: 'Sandbox Company_US_1' } });
   if (url.includes('/query')) {
     const q = decodeURIComponent(url.split('query=')[1] || '');
@@ -99,8 +105,10 @@ test('a full sweep of every read issues nothing but GETs at the company file', a
   await money.getCustomers({ tenant: 'sandbox' });
   await money.getCompanyInfo({ tenant: 'sandbox' });
   await money.getOpenCredits({ tenant: 'sandbox' });
+  await money.getIncome({ tenant: 'sandbox', start: '2026-09-01', end: '2026-09-27' });
 
   const books = fetchImpl.calls.filter((c) => c.url.includes('/v3/company/'));
+  assert.ok(books.some((c) => c.url.includes('/reports/ProfitAndLoss')), 'the P&L was not read');
   assert.ok(books.some((c) => c.url.includes('/reports/AgedReceivableDetail')), 'the detail report was not read');
   assert.ok(books.length >= 9, 'expected the sweep to actually hit the company file');
   for (const c of books) {

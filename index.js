@@ -29,6 +29,7 @@ const {
 } = require('./lib/interface');
 const { parseAgingReport, agingReportTotal, reconcile, round } = require('./lib/aging');
 const { parseAgingDetailReport, splitOpenCredits, AgingDetailColumnError } = require('./lib/aging-detail');
+const { parseProfitAndLoss, ProfitAndLossShapeError } = require('./lib/profit-and-loss');
 const quickbooks = require('./lib/adapters/quickbooks');
 
 /** The adapters this package ships. Xero would be one more entry here. */
@@ -84,6 +85,7 @@ module.exports = {
   // Pure helpers, usable without constructing anything.
   parseAgingReport, agingReportTotal, reconcile, round, normalizeBuckets,
   parseAgingDetailReport, splitOpenCredits, AgingDetailColumnError,
+  parseProfitAndLoss, ProfitAndLossShapeError,
   createCredentials, assertCredentialsPort, assertReadOnly, openDatabase,
   METHODS,
   adapters: ADAPTER_MODULES,

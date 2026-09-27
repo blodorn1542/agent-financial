@@ -95,6 +95,7 @@ test('the interface is exactly the read surface, and it is frozen shut', () => {
   assert.deepEqual(METHODS, [
     'getArAging', 'getOpenInvoices', 'getPaymentsSince', 'getCustomers',
     'getOpenCreditMemos', 'getInvoicesSince', 'getCompanyInfo', 'getOpenCredits',
+    'getIncome',
   ]);
   for (const m of METHODS) assert.equal(typeof money[m], 'function', m + ' is missing');
 
